@@ -6,19 +6,19 @@ import { v4 as uuidv4 } from "uuid";
 function App() {
   const [todo, setTodo] = useState("lorem epsum");
   const [todos, setTodos] = useState([]);
+  const [showFinished, setShowFinished] = useState(true);
 
-  useEffect(()=>{
+  useEffect(() => {
     let todoString = localStorage.getItem("todos");
-    if(todoString)
-    {
+    if (todoString) {
       let todos = JSON.parse(localStorage.getItem("todos"));
-      setTodos(todos)
+      setTodos(todos);
     }
   }, []);
 
-  const saveToLs = (params)=>{
+  const saveToLs = (params) => {
     localStorage.setItem("todos", JSON.stringify(todos));
-  }
+  };
 
   const handleAdd = () => {
     setTodos([...todos, { id: uuidv4(), todo, isCompleted: false }]);
@@ -59,6 +59,10 @@ function App() {
     saveToLs();
   };
 
+  const toggleFinished = (e) => {
+    setShowFinished(!showFinished);
+  };
+
   return (
     <>
       <Navbar />
@@ -76,51 +80,59 @@ function App() {
           />
           <button
             onClick={handleAdd}
-            className="bg-violet-800 hover:bg-violet-950 p-5 py-1 text-sm font-bold text-white rounded-md mx-6"
+            disabled={todo.length <= 3}
+            className="bg-violet-800 disabled:bg-violet-700 hover:bg-violet-950 p-5 py-1 text-sm font-bold text-white rounded-md mx-6"
           >
             Save
           </button>
         </div>
-
+        <input
+          className="mx-2"
+          type="checkbox"
+          checked={showFinished}
+          onChange={toggleFinished}
+        />
+        Show Finished
         <h2 className="text-lg font-bold">Your Todos</h2>
-
         <div className="todos">
           {todos.length === 0 && <div className="m-5">No Todos to display</div>}
           {todos.map((elem) => {
             return (
-              <div key={elem.id} className="todo flex justify-between my-4">
-                <div className="flex gap-5">
-                  <input
-                    type="checkbox"
-                    name={elem.id}
-                    className="mx-4"
-                    onChange={handleCheckbox}
-                    value={elem.isCompleted}
-                  />
-                  <div className={elem.isCompleted ? "line-through" : ""}>
-                    <label htmlFor="isCompleted">{elem.todo}</label>
+              (showFinished || !elem.isCompleted) && (
+                <div key={elem.id} className="todo flex justify-between my-4">
+                  <div className="flex gap-5">
+                    <input
+                      type="checkbox"
+                      name={elem.id}
+                      className="mx-4"
+                      onChange={handleCheckbox}
+                      checked={elem.isCompleted}
+                    />
+                    <div className={elem.isCompleted ? "line-through" : ""}>
+                      <label htmlFor="isCompleted">{elem.todo}</label>
+                    </div>
+                  </div>
+                  <div className="buttons flex h-full">
+                    <button
+                      onClick={(e) => {
+                        handleEdit(e, elem.id);
+                      }}
+                      className="bg-violet-800 hover:bg-violet-950 p-5 py-1 text-sm font-bold text-white rounded-md mx-1"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        handleDelete(e, elem.id);
+                      }}
+                      name={elem.id}
+                      className="bg-violet-800 hover:bg-violet-950 p-5 py-1 text-sm font-bold text-white rounded-md mx-1"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
-                <div className="buttons flex h-full">
-                  <button
-                    onClick={(e) => {
-                      handleEdit(e, elem.id);
-                    }}
-                    className="bg-violet-800 hover:bg-violet-950 p-5 py-1 text-sm font-bold text-white rounded-md mx-1"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      handleDelete(e, elem.id);
-                    }}
-                    name={elem.id}
-                    className="bg-violet-800 hover:bg-violet-950 p-5 py-1 text-sm font-bold text-white rounded-md mx-1"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
+              )
             );
           })}
         </div>
